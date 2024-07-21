@@ -12,7 +12,7 @@
 
 ## Introduction
 
-The 21 Advisor Tool is a sophisticated application designed to assist players in making optimal decisions during a game of 21. It utilizes various algorithms and strategies to provide recommendations based on the current game state, card counting, and risk tolerance. this is created for the 21 in Resident Evil.
+The 21 Advisor Tool is not a sophisticated application designed to assist players in making optimal decisions during a game of 21. It utilizes various algorithms and strategies to provide recommendations based on the current game state, card counting, and risk tolerance. this is created for the 21 in Resident Evil.
 
 Note: This tool doesn't include the trump cards
 
