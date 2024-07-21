@@ -1,4 +1,4 @@
-# Blackjack Advisor Tool Documentation
+# 21 Advisor Tool Documentation
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -12,7 +12,9 @@
 
 ## Introduction
 
-The Blackjack Advisor Tool is a sophisticated application designed to assist players in making optimal decisions during a game of Blackjack. It utilizes various algorithms and strategies to provide recommendations based on the current game state, card counting, and risk tolerance. Note: This tool operates in a no trump card mode only.
+The 21 Advisor Tool is a sophisticated application designed to assist players in making optimal decisions during a game of 21. It utilizes various algorithms and strategies to provide recommendations based on the current game state, card counting, and risk tolerance. this is created for the 21 in Resident Evil.
+
+Note: This tool doesn't include the trump cards
 
 ## Installation
 
@@ -25,7 +27,7 @@ The Blackjack Advisor Tool is a sophisticated application designed to assist pla
 
 ## Usage
 
-To run the Blackjack Advisor Tool:
+To run the 21 Advisor Tool:
 
 1. Navigate to the directory containing the script.
 2. Run the following command:
