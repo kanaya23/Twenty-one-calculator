@@ -61,30 +61,28 @@ class MCTS:
         player_total = node.player_total
         dealer_total = sum(node.dealer_visible_cards)
 
-        # Player's turn
         while player_total < 21:
-            if random.random() < 0.5:  # 50% chance to hit
+            if random.random() < 0.5:
                 player_total += random.choice(self.deck)
             else:
                 break
 
-        # Dealer's turn
         while dealer_total < 17:
             dealer_total += random.choice(self.deck)
 
         if player_total > 21:
-            return 'Lose'  # Player busts
+            return 'Lose'
         elif dealer_total > 21 or player_total > dealer_total:
-            return 'Win'  # Player wins
+            return 'Win'
         elif player_total < dealer_total:
-            return 'Lose'  # Player loses
+            return 'Lose'
         else:
-            return 'Push'  # Push
+            return 'Push'
 
     def backpropagate(self, node, outcome):
         while node is not None:
             node.visits += 1
-            node.wins += self.outcome_to_value(outcome)  # Convert outcome to numeric value
+            node.wins += self.outcome_to_value(outcome)
             node = node.parent
 
     def outcome_to_value(self, outcome):
@@ -114,11 +112,9 @@ class BlackjackAdvisor:
 
         self.initialize_deck()
 
-        # Create main frame
         main_frame = tk.Frame(master, bg="#f0f0f0")
         main_frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
 
-        # Input frame
         input_frame = tk.LabelFrame(main_frame, text="Input", bg="#f0f0f0", font=("Arial", 12, "bold"))
         input_frame.pack(pady=10, padx=10, fill=tk.X)
 
@@ -148,20 +144,18 @@ class BlackjackAdvisor:
         calculate_button = tk.Button(input_frame, text="Calculate", command=self.calculate, bg="#00e5ff", fg="white", font=("Arial", 10, "bold"))
         calculate_button.grid(row=5, column=0, columnspan=2, pady=10)
 
-        # Result frame
         result_frame = tk.LabelFrame(main_frame, text="Result", bg="#f0f0f0", font=("Arial", 12, "bold"))
         result_frame.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
 
         self.result_text = tk.Text(result_frame, height=20, width=70, font=("Arial", 10))
         self.result_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        # Add a scrollbar to the result text
         scrollbar = tk.Scrollbar(result_frame, command=self.result_text.yview)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.result_text.config(yscrollcommand=scrollbar.set)
 
     def initialize_deck(self):
-        self.deck = list(range(1, 12))  # Assuming cards from 1 to 11 (Ace to Jack)
+        self.deck = list(range(1, 12))
         self.count = 0
         self.used_cards = []
 
@@ -170,26 +164,22 @@ class BlackjackAdvisor:
         your_cards_str = self.your_cards_entry.get()
         dealer_upcard_str = self.dealer_upcard_entry.get()
 
-        # Validate input format
         if not all(card_str.replace(" ", "").isdigit() for card_str in your_cards_str.split(",") + dealer_upcard_str.split(",")):
             messagebox.showwarning("Invalid Input", "Please enter card values as numbers separated by commas.")
             return
 
         your_cards = [int(card) for card in your_cards_str.split(",")]
-        # Parse dealer's visible cards
         dealer_visible_cards = [int(card.strip()) for card in self.dealer_upcard_entry.get().split(',')]
-        dealer_upcard = dealer_visible_cards[0]  # The first visible card is the upcard
+        dealer_upcard = dealer_visible_cards[0]
         risk_tolerance = self.risk_tolerance.get()
         counting_system = self.counting_system.get()
         algorithm = self.algorithm.get()
 
-        # Validate cards
         all_cards = your_cards + dealer_visible_cards
         if len(set(all_cards)) != len(all_cards) or any(card not in self.deck for card in all_cards):
             messagebox.showwarning("Invalid Input", "Invalid card combination. Please enter unique cards from 1 to 11.")
             return
 
-        # Update used cards and deck
         for card in all_cards:
             self.deck.remove(card)
             self.used_cards.append(card)
@@ -212,7 +202,7 @@ class BlackjackAdvisor:
             decision, hit_score, stand_score = self.semcts_decision(your_total, dealer_visible_cards, true_count, risk_tolerance)
             recommendation = f"{decision} (Hit score: {hit_score:.4f}, Stand score: {stand_score:.4f})"
             result = self.format_results(your_total, dealer_visible_cards, semcts_results, risk_tolerance, counting_system, algorithm, recommendation)
-        else:  # Monte Carlo
+        else:
             simulation_results = self.monte_carlo_simulation(your_total, dealer_visible_cards)
             self.update_count(all_cards, counting_system)
             recommendation = self.get_recommendation(
@@ -286,18 +276,15 @@ class BlackjackAdvisor:
             step_by_step.append(f"Scenario: Dealer's hidden card is {dealer_hidden}")
             step_by_step.append(f"Dealer's current total: {current_dealer_total}")
 
-            # Dealer draws cards until reaching at least 17
             while current_dealer_total < 17:
                 additional_card = random.choice(self.deck)
                 current_dealer_total += additional_card
                 step_by_step.append(f"Dealer draws: {additional_card}, New total: {current_dealer_total}")
 
-            # Stand scenario
             stand_outcome = self.determine_outcome(your_total, current_dealer_total)
             results['stand'][stand_outcome] += 1
             step_by_step.append(f"  If you STAND: {stand_outcome}")
 
-            # Hit scenarios
             step_by_step.append("  If you HIT:")
             for hit_card in self.deck:
                 new_total = your_total + hit_card
@@ -305,7 +292,6 @@ class BlackjackAdvisor:
                 results['hit'][hit_outcome] += 1
                 step_by_step.append(f"   Draw {hit_card}: New total {new_total} - Outcome: {hit_outcome}")
 
-                # Future considerations
                 if hit_outcome == 'Win':
                     future_considerations['hit'] += 1
                 elif hit_outcome == 'Lose':
@@ -316,7 +302,7 @@ class BlackjackAdvisor:
             elif stand_outcome == 'Lose':
                 future_considerations['stand'] -= 1
 
-            step_by_step.append("")  # Empty line for readability
+            step_by_step.append("")
 
         hit_total = sum(results['hit'].values())
         stand_total = sum(results['stand'].values())
@@ -344,11 +330,9 @@ class BlackjackAdvisor:
     def run_semcts(self, your_total, dealer_visible_cards, true_count, risk_tolerance):
         sb_results = self.scenario_bruteforce(your_total, dealer_visible_cards)
         
-        # Step 2: MCTS Initialization
         mcts = MCTS(self.deck)
         root_node = MCTSNode(your_total, dealer_visible_cards, true_count)
 
-        # Step 3: Guided MCTS Simulations
         num_simulations = 100000
         for _ in range(num_simulations):
             node = mcts.select(root_node)
@@ -357,7 +341,6 @@ class BlackjackAdvisor:
             outcome = self.guided_simulate(node, sb_results)
             mcts.backpropagate(node, outcome)
 
-        # Step 4: Combined Decision
         mcts_hit_prob = root_node.children['hit'].wins / root_node.children['hit'].visits if root_node.children['hit'] else 0
         mcts_stand_prob = root_node.children['stand'].wins / root_node.children['stand'].visits if root_node.children['stand'] else 0
 
@@ -387,17 +370,14 @@ class BlackjackAdvisor:
         dealer_visible_cards = node.dealer_visible_cards
         dealer_total = sum(dealer_visible_cards)
         
-        # Use scenario analysis to guide the simulation
         hit_prob = sb_results['hit_win_prob']
 
-        # Player's turn
         while player_total < 21:
-            if random.random() < hit_prob:  # Probability to hit based on scenario analysis
+            if random.random() < hit_prob:
                 player_total += self.weighted_card_draw(node.true_count)
             else:
                 break
 
-        # Dealer's turn
         while dealer_total < 17:
             dealer_total += self.weighted_card_draw(node.true_count)
 
@@ -448,7 +428,7 @@ class BlackjackAdvisor:
             output += f"MCTS Stand Probability: {results['mcts_stand_prob']:.2%}\n"
             output += f"SB Theory Hit Probability: {results['sb_hit_prob']:.2%}\n"
             output += f"SB Theory Stand Probability: {results['sb_stand_prob']:.2%}\n"
-        else:  # Monte Carlo
+        else:
             hit_total = results['hit_total']
             stand_total = results['stand_total']
             output += f"Hit win probability: {(results['hit']['Win'] + results['hit']['Push'] / 2) / hit_total:.2%}\n"
@@ -561,7 +541,7 @@ class BlackjackAdvisor:
             if counting_system == "Hi-Lo":
                 if card in [2, 3, 4, 5, 6]:
                     self.count += 1
-                elif card in [10, 11]:  # Assuming 11 represents Ace here
+                elif card in [10, 11]:
                     self.count -= 1
             elif counting_system == "KO":
                 if card in [2, 3, 4, 5, 6, 7]:
@@ -588,7 +568,7 @@ class BlackjackAdvisor:
             return 0.8
         elif risk_tolerance == "High":
             return 1.2
-        else:  # Medium
+        else:
             return 1.0
 
     def calculate_future_considerations(self, current_total, action):
@@ -601,7 +581,7 @@ class BlackjackAdvisor:
                 new_total = current_total + card
                 if new_total <= 21:
                     possible_totals[new_total] = count / total_cards
-        else:  # stand
+        else:
             possible_totals = {current_total: 1}
         
         weighted_future_score = sum((21 - total) * prob for total, prob in possible_totals.items())
@@ -624,64 +604,50 @@ class BlackjackAdvisor:
             return "Very High"
 
     def semcts_decision(self, your_total, dealer_visible_cards, true_count, risk_tolerance):
-        # Step 1: Run SEMCTS
         semcts_results = self.run_semcts(your_total, dealer_visible_cards, true_count, risk_tolerance)
         
-        # Step 2: Calculate decision scores
         hit_score = self.calculate_decision_score('hit', semcts_results, true_count, risk_tolerance)
         stand_score = self.calculate_decision_score('stand', semcts_results, true_count, risk_tolerance)
         
-        # Step 3: Make decision
         if hit_score > stand_score:
             return 'HIT', hit_score, stand_score
         else:
             return 'STAND', hit_score, stand_score
 
     def calculate_decision_score(self, action, semcts_results, true_count, risk_tolerance):
-        # Base probabilities
         mcts_prob = semcts_results[f'mcts_{action}_prob']
         sb_prob = semcts_results[f'sb_{action}_prob']
         combined_prob = semcts_results[f'combined_{action}_prob']
         
-        # Weights
         w_mcts = 0.4
         w_sb = 0.3
         w_combined = 0.3
         
-        # Risk factor (0.8 for low, 1.0 for medium, 1.2 for high)
         risk_factor = self.get_risk_factor(risk_tolerance)
         
-        # Count adjustment
         count_adjustment = self.get_count_adjustment(true_count, action)
         
-        # Calculate base score
         base_score = (w_mcts * mcts_prob + w_sb * sb_prob + w_combined * combined_prob) * risk_factor
         
-        # Apply count adjustment
         adjusted_score = base_score + count_adjustment
         
-        # Apply action-specific adjustments
         if action == 'hit':
-            # Encourage hitting on lower totals
             total_adjustment = max(0, (21 - semcts_results['your_total']) / 21)
             adjusted_score *= (1 + total_adjustment)
-        else:  # stand
-            # Encourage standing on higher totals
+        else:
             total_adjustment = max(0, (semcts_results['your_total'] - 11) / 10)
             adjusted_score *= (1 + total_adjustment)
         
-        # Normalize score to be between 0 and 1
         final_score = math.tanh(adjusted_score)
         
         return final_score
 
     def get_count_adjustment(self, true_count, action):
         if action == 'hit':
-            return -0.05 * true_count  # Discourage hitting as count increases
-        else:  # stand
-            return 0.05 * true_count  # Encourage standing as count increases
+            return -0.05 * true_count
+        else:
+            return 0.05 * true_count
 
 root = tk.Tk()
 advisor = BlackjackAdvisor(root)
 root.mainloop()
-    
