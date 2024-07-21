@@ -1,0 +1,4 @@
+tkinter==8.6.12
+random==3.9.13
+math==3.9.13
+collections==3.9.13
